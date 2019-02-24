@@ -146,3 +146,7 @@ EMAIL_HOST_USER = 'register012@163.com'
 EMAIL_HOST_PASSWORD = 'cui123'
 EMAIL_USE_TLS = False
 EMAIL_FROM = 'register012@163.com'
+
+# 上传文件路径配置
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
