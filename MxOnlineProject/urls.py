@@ -35,9 +35,9 @@ urlpatterns = [
     url('^reset/(?P<active_code>.*)/$', ResetView.as_view(), name='reset_pwd'),
     url('^modify_pwd/$', ModifyPwdForm.as_view(), name='modify_pwd'),
 
-    # 课程机构首页
-    url('^org_list/$', OrgView.as_view(), name='org_list'),
+    # 课程机构url配置
+    url(r'^org/', include('organization.urls', namespace='org')),
 
     # 配置用户上传文件的访问处理
-    url('^media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT})
+    url('^media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT}),
 ]

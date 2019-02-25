@@ -4,6 +4,9 @@ from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 # Create your views here.
 from django.views.generic import View
+from django.http import HttpResponse
+
+from organization.forms import UserAskForm
 from .models import CourseOrg, CityDict
 
 
@@ -13,6 +16,8 @@ class OrgView(View):
     def get(self, request):
         # 课程机构
         all_orgs = CourseOrg.objects.all()
+        # 热门机构前5名
+        hot_orgs = CourseOrg.objects.order_by('click_nums')[:5]
 
         # 城市
         all_citys = CityDict.objects.all()
@@ -29,6 +34,14 @@ class OrgView(View):
 
         org_nums = all_orgs.count()
 
+        # 排序功能
+        sort = request.GET.get('sort', '')
+        if sort:
+            if sort == 'students':
+                all_orgs = all_orgs.order_by('-students')
+            elif sort == 'courses':
+                all_orgs = all_orgs.order_by('-course_nums')
+
         # 分页功能
         try:
             page = request.GET.get('page', 1)
@@ -44,5 +57,21 @@ class OrgView(View):
             'all_citys': all_citys,
             'org_nums': org_nums,
             'city_id': city_id,
-            'category': category
+            'category': category,
+            'hot_orgs': hot_orgs,
+            'sort': sort
         })
+
+
+class AddUserAskView(View):
+    '''
+    用户添加咨询
+    '''
+
+    def post(self, request):
+        userask_form = UserAskForm(request.POST)
+        if userask_form.is_valid():
+            user_ask = userask_form.save(commit=True)
+            return HttpResponse('{"status": "success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status": "fail", "msg": "添加出错"}', content_type='application/json')
