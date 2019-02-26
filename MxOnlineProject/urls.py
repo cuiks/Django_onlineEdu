@@ -40,4 +40,7 @@ urlpatterns = [
 
     # 配置用户上传文件的访问处理
     url('^media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT}),
+
+    # 课程列表页url配置
+    url(r'^courses/', include('courses.urls', namespace='courses')),
 ]

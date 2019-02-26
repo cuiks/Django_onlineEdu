@@ -33,6 +33,9 @@ class CourseComments(models.Model):
         verbose_name = u'课程评论'
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return '添加{}评论'.format(self.user.username)
+
 
 class UserFavorite(models.Model):
     user = models.ForeignKey(UserProfile, verbose_name=u'用户名')
@@ -64,3 +67,6 @@ class UserCourse(models.Model):
     class Meta:
         verbose_name = u'用户课程'
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return '"{}"学习了"{}"'.format(self.user.username, self.course)
