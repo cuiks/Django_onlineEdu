@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views.generic import View
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
-from .models import Course, CourseResource
+from .models import Course, CourseResource, Video
 from operation.models import UserFavorite, CourseComments, UserCourse
 from utils.mixin_utils import LoginRequiredMixin
 
@@ -107,6 +107,36 @@ class CourseInfoView(LoginRequiredMixin, View):
             'course_files': course_files,
             'teacher': teacher,
             'all_courses': all_courses
+        })
+
+
+class VideoPlayView(LoginRequiredMixin, View):
+    '''视频播放页面'''
+
+    def get(self, request, video_id):
+        # 课程
+        video = Video.objects.get(id=video_id)
+        course = video.lesson.course
+
+        # 资料下载
+        course_files = CourseResource.objects.filter(course_id=course.id)
+        # 课程讲师
+        teacher = course.teacher
+        ###学过改课的同学还学过###
+        # 所有学过此课程的学生
+        user_course = UserCourse.objects.filter(course_id=course.id)
+        all_users = list(set([user_course.user.id for user_course in user_course]))
+        # 这些学生学过的其他课程id
+        all_user_course = UserCourse.objects.filter(user_id__in=all_users)
+        all_course_ids = list(set([user_course.course.id for user_course in all_user_course]))
+        # 根据id取出所有课程
+        all_courses = Course.objects.filter(id__in=all_course_ids).order_by('-click_nums')[:5]
+        return render(request, 'course-play.html', {
+            'course': course,
+            'course_files': course_files,
+            'teacher': teacher,
+            'all_courses': all_courses,
+            'video':video
         })
 
 

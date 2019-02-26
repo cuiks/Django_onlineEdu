@@ -101,7 +101,7 @@
                                     <ul class="video">
                                         {% for video in lesson.get_video %}
                                             <li>
-                                                <a target="_blank" href='{{ video.url }}'
+                                                <a target="_blank" href='{% url 'courses:video_play' video.id %}'
                                                    class="J-media-item studyvideo">
                                                     {{ video.name }}({{ video.learn_times }})
                                                     <i class="study-state"></i>

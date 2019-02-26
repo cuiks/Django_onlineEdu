@@ -6,9 +6,10 @@ from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import View
 from django.http import HttpResponse
 
+from courses.models import Course
 from operation.models import UserFavorite
 from organization.forms import UserAskForm
-from .models import CourseOrg, CityDict
+from .models import CourseOrg, CityDict, Teacher
 
 
 class OrgView(View):
@@ -188,3 +189,55 @@ class AddFavView(View):
                 return HttpResponse('{"status":"success","msg":"已收藏"}', content_type='application/json')
             else:
                 return HttpResponse('{"status":"success","msg":"收藏出错"}', content_type='application/json')
+
+
+class TeacherListView(View):
+    '''讲师列表'''
+
+    def get(self, request):
+        all_teachers = Teacher.objects.all()
+        # 讲师排行榜
+        hot_teacher = all_teachers.order_by('-click_nums')[:5]
+        sort = request.GET.get('sort', '')
+        if sort:
+            if sort == 'hot':
+                all_teachers = all_teachers.order_by('-click_nums')
+
+        # 分页功能
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        p = Paginator(all_teachers, 2, request=request)
+        teachers = p.page(page)
+        return render(request, 'teachers-list.html', {
+            'all_teachers': teachers,
+            'hot_teacher': hot_teacher,
+            'sort': sort
+        })
+
+
+class TeacherDetailView(View):
+    '''讲师详情页'''
+
+    def get(self, request, teacher_id):
+        teacher = Teacher.objects.get(id=int(teacher_id))
+        all_course = Course.objects.filter(teacher=teacher)
+        # 讲师排行榜
+        hot_teacher = Teacher.objects.all().order_by('-click_nums')[:5]
+
+        # 判断是否收藏
+        has_fav_teacher = False
+        has_fav_org = False
+        if request.user.is_authenticated():
+            if UserFavorite.objects.filter(user=request.user, fav_type=3, fav_id=teacher.id):
+                has_fav_teacher = True
+            if UserFavorite.objects.filter(user=request.user, fav_type=2, fav_id=teacher.org.id):
+                has_fav_org = True
+        return render(request, 'teacher-detail.html', {
+            'teacher': teacher,
+            'all_course': all_course,
+            'hot_teacher': hot_teacher,
+            'has_fav_teacher': has_fav_teacher,
+            'has_fav_org': has_fav_org
+        })
