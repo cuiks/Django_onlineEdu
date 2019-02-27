@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import View
@@ -19,6 +20,11 @@ class CourseListView(View):
         all_courses = Course.objects.order_by('-add_time')
         # 热门课程推荐
         hot_courses = all_courses.order_by('-click_nums')[:3]
+
+        # 全局搜索框
+        search_keyword = request.GET.get('keywords', '')
+        if search_keyword:
+            all_courses = all_courses.filter(Q(name__icontains=search_keyword) | Q(desc__icontains=search_keyword))
 
         # 筛选功能
         sort = request.GET.get('sort', '')

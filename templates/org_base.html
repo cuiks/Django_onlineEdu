@@ -97,7 +97,7 @@
                 <li {% ifequal current_page 'desc' %}class="active2" {% endifequal %}><a
                         href="{% url 'org:desc' course_org.id %}">机构介绍</a></li>
                 <li {% ifequal current_page 'teacher' %}class="active2" {% endifequal %}><a
-                        href="{% url 'org:teacher' course_org.id %}">机构讲师</a></li>
+                        href="{% url 'org:org_teacher' course_org.id %}">机构讲师</a></li>
             </ul>
         </div>
         {% block right_form %}

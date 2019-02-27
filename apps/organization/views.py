@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.db.models import Q
 from django.shortcuts import render
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
@@ -20,6 +21,11 @@ class OrgView(View):
         all_orgs = CourseOrg.objects.all()
         # 热门机构前5名
         hot_orgs = CourseOrg.objects.order_by('click_nums')[:5]
+
+        # 全局搜索框
+        search_keyword = request.GET.get('keywords', '')
+        if search_keyword:
+            all_orgs = all_orgs.filter(Q(name__icontains=search_keyword) | Q(desc__icontains=search_keyword))
 
         # 城市
         all_citys = CityDict.objects.all()
@@ -198,6 +204,13 @@ class TeacherListView(View):
         all_teachers = Teacher.objects.all()
         # 讲师排行榜
         hot_teacher = all_teachers.order_by('-click_nums')[:5]
+
+        # 全局搜索框
+        search_keyword = request.GET.get('keywords', '')
+        if search_keyword:
+            all_teachers = all_teachers.filter(Q(name__icontains=search_keyword) | Q(points__icontains=search_keyword))
+
+        # 排序
         sort = request.GET.get('sort', '')
         if sort:
             if sort == 'hot':

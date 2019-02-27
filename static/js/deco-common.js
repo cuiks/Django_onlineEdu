@@ -67,7 +67,7 @@ function search_click(){
         return
     }
     if(type == "course"){
-        request_url = "/course/list?keywords="+keywords
+        request_url = "/courses/list?keywords="+keywords
     }else if(type == "teacher"){
         request_url = "/org/teacher/list?keywords="+keywords
     }else if(type == "org"){
