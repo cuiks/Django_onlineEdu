@@ -70,3 +70,4 @@ class UserCourse(models.Model):
 
     def __str__(self):
         return '"{}"学习了"{}"'.format(self.user.username, self.course)
+

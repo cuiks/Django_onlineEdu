@@ -2971,7 +2971,7 @@ footer .footer .line {
 
 .groupPurchase_detail .toppro .des {
     width: 480px;
-    height: 100%;
+    /*height: 100%;*/
     float: right;
     line-height: 180%;
     position: relative;
@@ -4093,7 +4093,7 @@ footer .footer .line {
 .personal_list .left a {
     width: 90%;
     margin: 0 5%;
-    height: 100%;
+    /*height: 100%;*/
     display: block;
     color: #3a3a3a;
 }
@@ -6155,7 +6155,7 @@ footer .footer .line {
 
 .messagelist .fr {
     width: 870px;
-    height: 100%;
+    /*height: 100%;*/
 }
 
 .messagelist .time {

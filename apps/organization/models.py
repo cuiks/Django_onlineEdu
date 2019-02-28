@@ -43,6 +43,10 @@ class CourseOrg(models.Model):
     def get_teacher_nums(self):
         return self.teacher_set.all().count()
 
+    def get_course(self):
+        '''获取机构两门经典课程'''
+        return self.course_set.all().order_by('-click_nums')[:2]
+
 
 class Teacher(models.Model):
     org = models.ForeignKey(CourseOrg, verbose_name=u'所属机构')
@@ -65,3 +69,6 @@ class Teacher(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_courses_num(self):
+        return self.course_set.all().count()

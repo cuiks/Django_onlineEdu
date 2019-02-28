@@ -1,19 +1,29 @@
 # _*_ encoding:utf-8 _*_
+import json
+
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
+from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
+from courses.models import Course
 from .models import UserProfile, EmailVerifyRecord
-from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm
+from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm, UploadImageForm, UserInfoForm
 from utils.email_send import send_email
+from utils.mixin_utils import LoginRequiredMixin
+from operation.models import UserCourse, UserFavorite, UserMessage
+from organization.models import CourseOrg, Teacher
 
 
 # Create your views here.
 
 class CustomBackend(ModelBackend):
+    '''用户登录逻辑，重写authenticate方法'''
+
     def authenticate(self, username=None, password=None, **kwargs):
         try:
             user = UserProfile.objects.get(Q(username=username) | Q(email=username))
@@ -37,7 +47,7 @@ class CustomBackend(ModelBackend):
 #     elif request.method == 'GET':
 #         return render(request, 'login.html', {})
 
-class LogiView(View):
+class LoginView(View):
     '''通过类和继承实现自定义登录逻辑'''
 
     def get(self, request):
@@ -59,6 +69,15 @@ class LogiView(View):
                 return render(request, 'login.html', {'msg': '用户名或密码错误', 'login_form': login_form})
         else:
             return render(request, 'login.html', {'login_form': login_form})
+
+
+class LogOutView(View):
+    '''退出登录'''
+
+    def get(self, request):
+        logout(request)
+        from django.core.urlresolvers import reverse
+        return HttpResponseRedirect(reverse('index'))
 
 
 class RegisterView(View):
@@ -89,6 +108,8 @@ class RegisterView(View):
 
 
 class ActiveUserView(View):
+    '''用户激活'''
+
     def get(self, request, active_code):
         all_records = EmailVerifyRecord.objects.filter(code=active_code)
         if all_records:
@@ -103,6 +124,8 @@ class ActiveUserView(View):
 
 
 class ForgetPwdView(View):
+    '''忘记密码'''
+
     def get(self, request):
         forget_form = ForgetForm()
         return render(request, 'forgetpwd.html', {'forget_form': forget_form})
@@ -118,6 +141,8 @@ class ForgetPwdView(View):
 
 
 class ResetView(View):
+    '''重置密码页面'''
+
     def get(self, request, active_code):
         all_records = EmailVerifyRecord.objects.filter(code=active_code)
         if all_records:
@@ -130,6 +155,8 @@ class ResetView(View):
 
 
 class ModifyPwdForm(View):
+    '''重置密码逻辑'''
+
     def post(self, request):
         modify_form = ModifyForm(request.POST)
         if modify_form.is_valid():
@@ -145,3 +172,147 @@ class ModifyPwdForm(View):
         else:
             email = request.POST.get('email', '')
             return render(request, 'password_reset.html', {'email': email, 'modify_form': modify_form})
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    '''用户个人信息'''
+
+    def get(self, request):
+        return render(request, 'usercenter-info.html')
+
+    def post(self, request):
+        user_form = UserInfoForm(request.POST, instance=request.user)
+        if user_form.is_valid():
+            user_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(user_form.errors), content_type='application/json')
+
+
+class UploadImageView(LoginRequiredMixin, View):
+    '''用户上传头像'''
+
+    def post(self, request):
+        image_form = UploadImageForm(request.POST, request.FILES, instance=request.user)
+        if image_form.is_valid():
+            status = image_form.save()
+            print(status)
+            # image = image_form.cleaned_data['image']
+            # request.user.image = image
+            # request.user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail"}', content_type='application/json')
+
+
+class UpdatePwdForm(View):
+    '''用户个人中心修改密码'''
+
+    def post(self, request):
+        modify_form = ModifyForm(request.POST)
+        if modify_form.is_valid():
+            pwd1 = request.POST.get('password1', '')
+            pwd2 = request.POST.get('password2', '')
+            if pwd2 != pwd1:
+                return HttpResponse('{"status":"fail","msg":"密码不一致！"}', content_type='application/json')
+            user = request.user
+            user.password = make_password(pwd1)
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(modify_form.errors), content_type='application/json')
+
+
+class SendEmailCodeView(View):
+    '''修改邮箱发送验证码'''
+
+    def get(self, request):
+        email = request.GET.get('email')
+        if UserProfile.objects.filter(email=email):
+            return HttpResponse('{"email":"邮箱已注册"}', content_type='application/json')
+        send_email(email, 'update_email')
+        return HttpResponse('{"status":"success"}', content_type='application/json')
+
+
+class UpdateEmailView(View):
+    '''修改邮箱'''
+
+    def post(self, request):
+        email = request.POST.get('email')
+        code = request.POST.get('code')
+        if EmailVerifyRecord.objects.filter(email=email, code=code):
+            user = request.user
+            user.email = email
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"email":"验证码错误"}', content_type='application/json')
+
+
+class MyCourseView(LoginRequiredMixin, View):
+    '''我的课程页面'''
+
+    def get(self, request):
+        user = request.user
+        all_courses = UserCourse.objects.filter(user=user)
+        return render(request, 'usercenter-mycourse.html', {
+            'all_courses': all_courses
+        })
+
+
+class UserFavOrgView(LoginRequiredMixin, View):
+    '''个人中心课程机构收藏'''
+
+    def get(self, request):
+        all_org_id = UserFavorite.objects.filter(user_id=request.user.id, fav_type=2)
+        all_org_ids = [item.fav_id for item in all_org_id]
+        all_orgs = CourseOrg.objects.filter(id__in=all_org_ids)
+        return render(request, 'usercenter-fav-org.html', {
+            'all_orgs': all_orgs
+        })
+
+
+class UserFavTeacherView(LoginRequiredMixin, View):
+    '''个人中心讲师收藏'''
+
+    def get(self, request):
+        all_teacher_id = UserFavorite.objects.filter(user_id=request.user.id, fav_type=3)
+        all_teacher_ids = [item.fav_id for item in all_teacher_id]
+        all_teachers = Teacher.objects.filter(id__in=all_teacher_ids)
+        return render(request, 'usercenter-fav-teacher.html', {
+            'all_teachers': all_teachers
+        })
+
+
+class UserFavCourseView(LoginRequiredMixin, View):
+    '''个人中心课程收藏'''
+
+    def get(self, request):
+        all_course_id = UserFavorite.objects.filter(user_id=request.user.id, fav_type=1)
+        all_course_ids = [item.fav_id for item in all_course_id]
+        all_courses = Course.objects.filter(id__in=all_course_ids)
+        return render(request, 'usercenter-fav-course.html', {
+            'all_courses': all_courses
+        })
+
+
+class UserMessageView(LoginRequiredMixin, View):
+    '''个人中心，我的消息'''
+
+    def get(self, request):
+        all_messages = UserMessage.objects.filter(Q(user=request.user.id) | Q(user=0))
+        for item_message in all_messages:
+            item_message.has_read = True
+            item_message.save()
+        # 分页功能
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+
+        p = Paginator(all_messages, 3, request=request)
+
+        messages = p.page(page)
+        return render(request, 'usercenter-message.html', {
+            'all_messages': messages
+        })

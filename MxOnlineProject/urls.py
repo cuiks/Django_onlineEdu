@@ -20,14 +20,15 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views.static import serve
 import xadmin
-from users.views import LogiView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdForm
+from users.views import LoginView, LogOutView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdForm
 from organization.views import OrgView
 from .settings import MEDIA_ROOT
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
     url('^$', TemplateView.as_view(template_name='index.html'), name='index'),
-    url('^login/$', LogiView.as_view(), name='login'),
+    url('^login/$', LoginView.as_view(), name='login'),
+    url('^logout/$', LogOutView.as_view(), name='logout'),
     url('^register/$', RegisterView.as_view(), name='register'),
     url(r'^captcha/', include('captcha.urls')),
     url('^active/(?P<active_code>.*)/$', ActiveUserView.as_view(), name='user_active'),
@@ -43,4 +44,7 @@ urlpatterns = [
 
     # 课程列表页url配置
     url(r'^courses/', include('courses.urls', namespace='courses')),
+
+    # 个人中心url配置
+    url(r'^users/', include('users.urls', namespace='users')),
 ]
