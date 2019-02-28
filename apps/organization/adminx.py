@@ -14,6 +14,8 @@ class CourseOrgAdmin(object):
     list_display = ['name', 'desc', 'click_nums', 'fav_nums', 'image', 'address', 'city', 'category', 'add_time']
     search_fields = ['name', 'desc', 'click_nums', 'fav_nums', 'image', 'address', 'city', 'category']
     list_filter = ['name', 'desc', 'click_nums', 'fav_nums', 'image', 'address', 'city', 'category', 'add_time']
+    # 所有使用课程机构为外键的项目可以输入提示，动态加载
+    relfield_style = 'fk_ajax'
 
 
 class TeacherAdmin(object):

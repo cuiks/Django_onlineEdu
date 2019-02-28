@@ -1,6 +1,7 @@
 # _*_ encoding:utf-8 _*_
 import json
 
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
@@ -9,9 +10,10 @@ from django.db.models import Q
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import render_to_response
 
 from courses.models import Course
-from .models import UserProfile, EmailVerifyRecord
+from .models import UserProfile, EmailVerifyRecord, Banner
 from .forms import LoginForm, RegisterForm, ForgetForm, ModifyForm, UploadImageForm, UserInfoForm
 from utils.email_send import send_email
 from utils.mixin_utils import LoginRequiredMixin
@@ -62,7 +64,7 @@ class LoginView(View):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return render(request, 'index.html')
+                    return HttpResponseRedirect(reverse('index'))
                 else:
                     return render(request, 'login.html', {'msg': '用户未激活'})
             else:
@@ -76,7 +78,6 @@ class LogOutView(View):
 
     def get(self, request):
         logout(request)
-        from django.core.urlresolvers import reverse
         return HttpResponseRedirect(reverse('index'))
 
 
@@ -316,3 +317,33 @@ class UserMessageView(LoginRequiredMixin, View):
         return render(request, 'usercenter-message.html', {
             'all_messages': messages
         })
+
+
+class IndexView(View):
+    '''首页view'''
+    def get(self, request):
+        all_banner = Banner.objects.all()[:5]
+        banner_courses = Course.objects.filter(is_banner=True)
+        courses = Course.objects.filter(is_banner=False)[:6]
+        orgs = CourseOrg.objects.all()[:15]
+        return render(request,'index.html',{
+            'all_banner':all_banner,
+            'banner_courses':banner_courses,
+            'courses':courses,
+            'orgs':orgs
+        })
+
+
+def page_not_found(request):
+    '''404页面'''
+    response = render_to_response('404.html')
+    response.status_code = 404
+    return response
+
+
+
+def server_error(request):
+    '''500页面'''
+    response = render_to_response('500.html')
+    response.status_code = 500
+    return response

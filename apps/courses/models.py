@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.db import models
 from organization.models import CourseOrg, Teacher
+from DjangoUeditor.models import UEditorField
 
 
 # Create your models here.
@@ -11,7 +12,9 @@ class Course(models.Model):
     course_org = models.ForeignKey(CourseOrg, verbose_name=u'课程机构', null=True, blank=True)
     name = models.CharField(max_length=50, verbose_name=u'课程名')
     desc = models.CharField(max_length=300, verbose_name=u'课程描述')
-    detail = models.TextField(verbose_name=u'课程详情')
+    detail = UEditorField(verbose_name=u'课程详情', width=600, height=300, imagePath="course/ueditor/image/",
+                          filePath="course/ueditor/file/", default='')
+    is_banner = models.BooleanField(default=False, verbose_name=u'是否轮播')
     degree = models.CharField(max_length=5, verbose_name=u'课程难度', choices=(('cj', '初级'), ('zj', '中级'), ('gj', '高级')))
     learn_times = models.IntegerField(default=0, verbose_name=u'学习时长(分)')
     students = models.IntegerField(default=0, verbose_name=u'学习人数')
@@ -34,6 +37,14 @@ class Course(models.Model):
         # 获取课程章节数
         return self.lesson_set.all().count()
 
+    # 设置后台显示的标签title
+    get_zj_nums.short_description = u'章节数'
+
+    # 后天添加跳转
+    def go_to(self):
+        from django.utils.safestring import mark_safe
+        return mark_safe('<a href="http://127.0.0.1:8000/courses/detail/{}/">跳转<a/>'.format(self.id))
+
     def get_learn_user(self):
         # 获取学习用户
         return self.usercourse_set.all()[:5]
@@ -41,6 +52,14 @@ class Course(models.Model):
     def get_zj(self):
         # 获取课程所有章节
         return self.lesson_set.all()
+
+
+# 把课程中是轮播课程的单独展示
+class BannerCourse(Course):
+    class Meta:
+        verbose_name = u'轮播课程'
+        verbose_name_plural = verbose_name
+        proxy = True
 
 
 class Lesson(models.Model):

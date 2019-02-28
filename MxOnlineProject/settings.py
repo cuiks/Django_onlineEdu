@@ -28,7 +28,7 @@ SECRET_KEY = '_o+jpkrjp20y#m&u@7&0b@&+a$j=a++8*%1e5@2%q&eb6vsxaq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*',]
 
 # Application definition
 
@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'operation',
     'xadmin',
     'crispy_forms',
-    'captcha'
+    'captcha',
+    'DjangoUeditor'
 ]
 # 使用自己写的UserProfile替换原有的user
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -152,3 +153,6 @@ EMAIL_FROM = 'register012@163.com'
 # 上传文件路径配置
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')

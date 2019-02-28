@@ -94,6 +94,8 @@ class CourseInfoView(LoginRequiredMixin, View):
         if not temp_user_course:
             temp_user_course = UserCourse(user=request.user, course=course)
             temp_user_course.save()
+            course.students += 1
+            course.save()
 
         # 资料下载
         course_files = CourseResource.objects.filter(course_id=course.id)
@@ -142,7 +144,7 @@ class VideoPlayView(LoginRequiredMixin, View):
             'course_files': course_files,
             'teacher': teacher,
             'all_courses': all_courses,
-            'video':video
+            'video': video
         })
 
 

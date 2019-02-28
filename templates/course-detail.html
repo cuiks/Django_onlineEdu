@@ -126,7 +126,11 @@
                         </ul>
                     </div>
                     <div class="tab_cont tab_cont1">
-                        <p>{{ course.course_org.desc }}</p>
+                        <p>
+                            {% autoescape off %}
+                            {{ course.detail }}
+                            {% endautoescape %}
+                        </p>
                     </div>
                 </div>
                 <div class="right layout">

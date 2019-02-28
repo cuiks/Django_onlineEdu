@@ -20,13 +20,15 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views.static import serve
 import xadmin
+
 from users.views import LoginView, LogOutView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdForm
+from users.views import IndexView
 from organization.views import OrgView
 from .settings import MEDIA_ROOT
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
-    url('^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    url('^$', IndexView.as_view(), name='index'),
     url('^login/$', LoginView.as_view(), name='login'),
     url('^logout/$', LogOutView.as_view(), name='logout'),
     url('^register/$', RegisterView.as_view(), name='register'),
@@ -42,9 +44,20 @@ urlpatterns = [
     # 配置用户上传文件的访问处理
     url('^media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT}),
 
+    # 配置静态文件的访问处理
+    # url('^static/(?P<path>.*)$', serve, {'document_root': STATIC_ROOT}),
+
     # 课程列表页url配置
     url(r'^courses/', include('courses.urls', namespace='courses')),
 
     # 个人中心url配置
     url(r'^users/', include('users.urls', namespace='users')),
+    # ueditor
+    url(r'^ueditor/',include('DjangoUeditor.urls' )),
 ]
+
+# 配置全局404页面
+handler404 = 'users.views.page_not_found'
+
+# 配置全局500页面
+handler500 = 'users.views.server_error'
