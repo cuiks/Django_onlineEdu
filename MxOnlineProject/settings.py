@@ -28,7 +28,7 @@ SECRET_KEY = '_o+jpkrjp20y#m&u@7&0b@&+a$j=a++8*%1e5@2%q&eb6vsxaq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*', ]
 
 # Application definition
 
@@ -97,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mxonlineproject',
         'USER': 'root',
-        'PASSWORD': 'cui123',
+        'PASSWORD': 'password',
         'HOST': '127.0.0.1'
     }
 }
@@ -144,15 +144,14 @@ STATICFILES_DIRS = (
 # 发送邮件配置
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'register012@163.com'
+EMAIL_HOST_USER = 'email_user'
 # 此处为smtp授权码，不是登录密码
-EMAIL_HOST_PASSWORD = 'cui123'
+EMAIL_HOST_PASSWORD = 'email_password'
 EMAIL_USE_TLS = False
-EMAIL_FROM = 'register012@163.com'
+EMAIL_FROM = 'email_user'
 
 # 上传文件路径配置
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
