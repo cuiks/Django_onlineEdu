@@ -2,8 +2,6 @@
 python3.6 + Django1.9 + Xadmin + virtualenv + MySQL
 ## 部署环境
 阿里云 + nginx + uwsgi + MySQL
-## 实例服务器
-http://47.107.181.222
 
 
 ## 前台功能模块
